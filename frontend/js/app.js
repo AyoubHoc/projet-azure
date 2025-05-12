@@ -1,4 +1,7 @@
-const API_URL = "https://projet-azure-api.francecentral-01.azurewebsites.net/api/hello";
+// frontend/js/app.js
+
+// URL exacte de votre API Flask (reprenez-la depuis le portail Azure > Overview > Default domain)
+const API_URL = "https://projet-azure-api-fbb2hqxfafbab7ct.francecentral-01.azurewebsites.net/api/hello";
 
 async function callApi() {
   const resultEl = document.getElementById("result");
