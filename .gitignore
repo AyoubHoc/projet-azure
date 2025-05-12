@@ -9,5 +9,3 @@ __pycache__/
 # VS Code
 .vscode/
 
-# Azure DevOps pipeline
-azure-pipelines.yml
