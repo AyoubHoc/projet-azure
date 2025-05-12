@@ -1,6 +1,6 @@
 // frontend/js/app.js
 
-// URL exacte de votre API Flask (reprenez-la depuis le portail Azure > Overview > Default domain)
+// === Mettez ici VOTRE URL exacte ===
 const API_URL = "https://projet-azure-api-fbb2hqxfafbab7ct.francecentral-01.azurewebsites.net/api/hello";
 
 async function callApi() {
@@ -8,15 +8,13 @@ async function callApi() {
   resultEl.textContent = "Chargement…";
 
   try {
-    const response = await fetch(API_URL);
-    if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
-    const data = await response.json();
-    resultEl.textContent = data.msg;
-  } catch (error) {
-    console.error("Erreur lors de l'appel API :", error);
-    resultEl.textContent = `Erreur : ${error.message}`;
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const { msg } = await res.json();
+    resultEl.textContent = msg;
+  } catch (e) {
+    console.error("Erreur lors de l'appel API :", e);
+    resultEl.textContent = `Erreur : ${e.message}`;
   }
 }
 
