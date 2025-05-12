@@ -1,21 +1,21 @@
-// frontend/js/app.js
+const HELLO_URL = "/api/hello";
+const DB_URL    = "/api/dbhello";
+const resultEl  = document.getElementById("result");
 
-// Récupérez ce nom de domaine dans Azure Portal → App Service → Overview → Default domain
-const API_URL = "https://projet-azure-api-fbb2hqxfafbab7ct.francecentral-01.azurewebsites.net/api/hello";
-
-async function callApi() {
-  const resultEl = document.getElementById("result");
+async function callEndpoint(url) {
   resultEl.textContent = "Chargement…";
   try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    const { msg } = await res.json();
-    resultEl.textContent = msg;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.status + " " + res.statusText);
+    const data = await res.json();
+    resultEl.textContent = data.msg || JSON.stringify(data);
   } catch (e) {
-    console.error("Erreur lors de l'appel API :", e);
     resultEl.textContent = `Erreur : ${e.message}`;
   }
 }
 
 document.getElementById("call-btn")
-  .addEventListener("click", callApi);
+  .addEventListener("click", () => callEndpoint(HELLO_URL));
+
+document.getElementById("call-db-btn")
+  .addEventListener("click", () => callEndpoint(DB_URL));
