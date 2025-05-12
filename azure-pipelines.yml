@@ -3,38 +3,65 @@ trigger:
     include:
       - main
 
-pool:
-  vmImage: ubuntu-latest
-
 variables:
-  - name: azureSubscription
-    value: 'AzureSPN'
-  - name: resourceGroup
-    value: 'projet-azure-rg'
-  - name: apiAppName
-    value: 'projet-azure-api'
-  - name: keyVaultName
-    value: 'projet-azure-kv'
+  azureSubscription: 'AzureSPN'
+  resourceGroup:     'projet-azure-rg'
+  apiAppName:        'projet-azure-api'
+  keyVaultName:      'projet-azure-kv'
 
 stages:
-- stage: Deploy
+- stage: Build
+  displayName: "🛠️ Build backend"
   jobs:
-  - deployment: DeployFullStack
+  - job: BuildBackend
+    displayName: "Install Python deps"
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - checkout: self
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.x'
+
+      - script: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        displayName: "pip install"
+
+- stage: Deploy
+  displayName: "🚀 Deploy backend"
+  dependsOn: Build
+  jobs:
+  - deployment: DeployAPI
+    displayName: "Deploy Flask App to App Service"
     environment: 'production'
+    pool:
+      vmImage: ubuntu-latest
     strategy:
       runOnce:
         deploy:
           steps:
             - checkout: self
-            - task: AzureCLI@2
+
+            - task: AzureWebApp@1
+              displayName: "Azure Web App Deploy"
               inputs:
-                azureSubscription: 'SERVICE-CONNECTION-AZURE'
+                azureSubscription: $(azureSubscription)
+                appType: webAppLinux
+                appName: $(apiAppName)
+                package: '$(System.DefaultWorkingDirectory)/backend'
+                startupCommand: 'gunicorn --bind=0.0.0.0 --timeout 600 app:app'
+
+            - task: AzureCLI@2
+              displayName: "Configure KEYVAULT_NAME setting"
+              inputs:
+                azureSubscription: $(azureSubscription)
                 scriptType: bash
                 scriptLocation: inlineScript
                 inlineScript: |
-                  az staticwebapp upload \
-                    --name $(swaName) \
-                    --resource-group $(resourceGroup) \
-                    --source ./frontend \
-                    --api ./api \
-                    --location "$(location)"
+                  az webapp config appsettings set \
+                    -g $(resourceGroup) \
+                    -n $(apiAppName) \
+                    --settings KEYVAULT_NAME=$(keyVaultName)
