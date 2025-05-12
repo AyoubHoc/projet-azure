@@ -1,12 +1,11 @@
 // frontend/js/app.js
 
-// === Mettez ici VOTRE URL exacte ===
+// Récupérez ce nom de domaine dans Azure Portal → App Service → Overview → Default domain
 const API_URL = "https://projet-azure-api-fbb2hqxfafbab7ct.francecentral-01.azurewebsites.net/api/hello";
 
 async function callApi() {
   const resultEl = document.getElementById("result");
   resultEl.textContent = "Chargement…";
-
   try {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
