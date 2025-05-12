@@ -1,0 +1,6 @@
+Flask
+python-dotenv
+pyodbc
+azure-identity
+azure-keyvault-secrets
+gunicorn

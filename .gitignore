@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Static Web logs
+*.log
+
+# VS Code
+.vscode/
+
+# Azure DevOps pipeline
+azure-pipelines.yml
