@@ -7,9 +7,14 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  resourceGroup: 'projet-azure-rg'
-  swaName: 'projet-azure-frontend'
-  location: 'France Central'
+  - name: azureSubscription
+    value: 'AzureSPN'
+  - name: resourceGroup
+    value: 'projet-azure-rg'
+  - name: apiAppName
+    value: 'projet-azure-api'
+  - name: keyVaultName
+    value: 'projet-azure-kv'
 
 stages:
 - stage: Deploy
