@@ -1,15 +1,15 @@
-const btn = document.getElementById('callApi');
-const result = document.getElementById('result');
+const apiBase = process.env.API_BASE_URL || window.location.origin;
 
-const API_URL = 'https://projet-azure-api-fbb2hqxfafbab7ct.francecentral-01.azurewebsites.net/api/hello';
-
-btn.addEventListener('click', async () => {
-  result.textContent = 'Chargement…';
+async function callApi() {
   try {
-    const res = await fetch(API_URL);
-    const json = await res.json();
-    result.textContent = JSON.stringify(json, null, 2);
-  } catch (e) {
-    result.textContent = `Erreur : ${e.message}`;
+    const res = await fetch(`${apiBase}/api/hello`);
+    if (!res.ok) throw new Error(res.statusText);
+    const { msg } = await res.json();
+    document.getElementById('result').textContent = msg;
+  } catch (err) {
+    document.getElementById('result').textContent = `Erreur : ${err.message}`;
   }
-});
+}
+
+document.getElementById('call-btn')
+  .addEventListener('click', callApi);
