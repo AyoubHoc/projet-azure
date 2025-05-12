@@ -1,14 +1,10 @@
 import os
 from flask import Flask, jsonify
-from dotenv import load_dotenv
-from flask_cors import CORS           # ← import
-# (Key Vault commenté pour l'instant)
 
-# Charge .env en dev
-load_dotenv()
+from flask_cors import CORS         
 
 app = Flask(__name__)
-CORS(app)                             # ← active CORS pour tout
+CORS(app)                           
 
 @app.route('/api/hello')
 def hello():
