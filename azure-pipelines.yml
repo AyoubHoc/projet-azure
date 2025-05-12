@@ -5,20 +5,18 @@ trigger:
 
 variables:
   - name: azureSubscription
-    value: 'AzureSPN'
+    value: 'AzureSPN'         
   - name: resourceGroup
     value: 'projet-azure-rg'
   - name: apiAppName
-    value: 'projet-azure-api'
+    value: 'projet-azure-api' 
   - name: keyVaultName
     value: 'projet-azure-kv'
 
 stages:
 - stage: BuildAndTest
-  displayName: ' Build & Test'
   jobs:
   - job: BuildBackend
-    displayName: 'Install Python dependencies'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -32,7 +30,6 @@ stages:
         displayName: 'pip install'
 
 - stage: Deploy
-  displayName: ' Deploy to Azure'
   dependsOn: BuildAndTest
   jobs:
   - deployment: DeployAPI
@@ -44,17 +41,16 @@ stages:
       runOnce:
         deploy:
           steps:
-            - checkout: self
 
+            - checkout: self
             - task: AzureWebApp@1
               displayName: 'Azure Web App Deploy'
               inputs:
                 azureSubscription: $(azureSubscription)
                 appType: webAppLinux
                 appName: $(apiAppName)
-                package: '$(Build.SourcesDirectory)/backend'
+                package: 'backend'                  
                 startupCommand: 'gunicorn --bind=0.0.0.0 --timeout 600 app:app'
-
             - task: AzureCLI@2
               displayName: 'Set KEYVAULT_NAME app setting'
               inputs:
