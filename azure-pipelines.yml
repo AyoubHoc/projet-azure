@@ -15,8 +15,10 @@ variables:
 
 stages:
 - stage: BuildAndTest
+  displayName: ' Build & Test'
   jobs:
   - job: BuildBackend
+    displayName: 'Install Python dependencies'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -30,12 +32,14 @@ stages:
         displayName: 'pip install'
 
 - stage: Deploy
+  displayName: ' Deploy to Azure'
   dependsOn: BuildAndTest
   jobs:
   - deployment: DeployAPI
     displayName: 'Deploy Flask App'
     environment: 'production'
-    pool: { vmImage: ubuntu-latest }
+    pool:
+      vmImage: 'ubuntu-latest'
     strategy:
       runOnce:
         deploy:
