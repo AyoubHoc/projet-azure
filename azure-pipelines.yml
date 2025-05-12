@@ -4,10 +4,14 @@ trigger:
       - main
 
 variables:
-  azureSubscription: 'SERVICE-CONNECTION-AZURE'   # Nom de ta Service Connection
-  resourceGroup: 'projet-azure-rg'
-  apiAppName: 'projet-azure-api-fbb2hqxfafbab7ct'  # Nom exact de ta Web App
-  deployment_token: ''                             # Laisse vide ici; on utilsera un variable group
+  - name: azureSubscription
+    value: 'AzureSPN'
+  - name: resourceGroup
+    value: 'projet-azure-rg'
+  - name: apiAppName
+    value: 'projet-azure-api'
+  - name: keyVaultName
+    value: 'projet-azure-kv'
 
 stages:
 - stage: BuildAndTest
@@ -16,14 +20,14 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.x'
-    - script: |
-        cd backend
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      displayName: 'Install Python deps'
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.x'
+      - script: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        displayName: 'pip install'
 
 - stage: Deploy
   dependsOn: BuildAndTest
@@ -36,34 +40,22 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: AzureWebApp@1
-            inputs:
-              azureSubscription: $(azureSubscription)
-              appType: webAppLinux
-              appName: $(apiAppName)
-              package: 'backend'
-              startupCommand: 'gunicorn --bind=0.0.0.0 --timeout 600 app:app'
-          - task: AzureCLI@2
-            displayName: 'Configure KEYVAULT_NAME setting'
-            inputs:
-              azureSubscription: $(azureSubscription)
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az webapp config appsettings set \
-                  -g $(resourceGroup) -n $(apiAppName) \
-                  --settings KEYVAULT_NAME=projet-azure-kv
-
-  - deployment: DeployFront
-    environment: 'production'
-    pool:
-      vmImage: 'ubuntu-latest'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: AzureStaticWebApp@0
-            inputs:
-              app_location: 'frontend'
-              skip_app_build: true
-              azure_static_web_apps_api_token: $(deployment_token)
+            - task: AzureWebApp@1
+              displayName: 'Azure Web App Deploy'
+              inputs:
+                azureSubscription: $(azureSubscription)
+                appType: webAppLinux
+                appName: $(apiAppName)
+                package: 'backend'
+                startupCommand: 'gunicorn --bind=0.0.0.0 --timeout 600 app:app'
+            - task: AzureCLI@2
+              displayName: 'Set KEYVAULT_NAME app setting'
+              inputs:
+                azureSubscription: $(azureSubscription)
+                scriptType: bash
+                scriptLocation: inlineScript
+                inlineScript: |
+                  az webapp config appsettings set \
+                    -g $(resourceGroup) \
+                    -n $(apiAppName) \
+                    --settings KEYVAULT_NAME=$(keyVaultName)
