@@ -1,13 +1,15 @@
-document.getElementById('btn').onclick = async () => {
-    try {
-      // Précise le port 5000 pour appeler Flask
-      const res = await fetch('http://127.0.0.1:5000/api/hello');
-      const data = await res.json();
-      document.getElementById('output').textContent =
-        JSON.stringify(data, null, 2);
-    } catch (err) {
-      document.getElementById('output').textContent =
-        'Erreur : ' + err.message;
-    }
-  };
-  
+const btn = document.getElementById('callApi');
+const result = document.getElementById('result');
+
+const API_URL = 'https://projet-azure-api-fbb2hqxfafbab7ct.francecentral-01.azurewebsites.net/api/hello';
+
+btn.addEventListener('click', async () => {
+  result.textContent = 'Chargement…';
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    result.textContent = JSON.stringify(json, null, 2);
+  } catch (e) {
+    result.textContent = `Erreur : ${e.message}`;
+  }
+});
