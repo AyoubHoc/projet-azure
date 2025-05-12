@@ -1,6 +1,6 @@
-Flask
+flask
 flask-cors
 azure-identity
 azure-keyvault-secrets
-python-dotenv
 gunicorn
+python-dotenv  
