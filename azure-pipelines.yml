@@ -6,43 +6,20 @@ trigger:
 variables:
 - group: swa-secrets
 
-jobs:
-- job: DeployFrontend
-  displayName: Deploy Frontend to Azure Static Web App
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-    - checkout: self
+pool:
+  vmImage: ubuntu-latest
 
-    - task: AzureStaticWebApp@0
-      displayName: Deploy to SWA
-      inputs:
-        app_location: 'frontend'
-        output_location: ''
-        api_location: ''
-        skip_app_build: true
-        deployment_token: $(swa_deployment_token)
+stages:
+- stage: DeployFrontend
+  jobs:
+    - job: Deploy
+      steps:
+        - checkout: self
 
-- job: DeployFunction
-  displayName: Deploy Azure Function API
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-    - checkout: self
-
-    - task: ArchiveFiles@2
-      displayName: Archive function app for deployment
-      inputs:
-        rootFolderOrFile: 'api'
-        includeRootFolder: false
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/functionapp.zip'
-        replaceExistingArchive: true
-
-    - task: AzureFunctionApp@1
-      displayName: Deploy Function App
-      inputs:
-        azureSubscription: 'AzureSPN'
-        appType: functionAppLinux
-        appName: 'projet-azure-api' 
-        package: '$(Build.ArtifactStagingDirectory)/functionapp.zip'
+        - task: AzureStaticWebApp@0
+          displayName: 'Deploy Frontend to Azure Static Web App'
+          inputs:
+            app_location: 'frontend'
+            output_location: ''
+            skip_app_build: true
+            deployment_token: $(swa_deployment_token)
