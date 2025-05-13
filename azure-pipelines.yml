@@ -1,29 +1,50 @@
-variables:
-- group: SWA
-
 trigger:
   branches:
     include:
       - main
 
 variables:
-  azure_static_web_apps_api_token: $(deployment_token)  # à créer dans DevOps
-  app_location: '/' # racine du projet front
-  api_location: '../projet-azure-backend/functions/helloApi'
-  output_location: ''  # si tu as un build front, sinon vide
+  - group: SWA
+  - name: azureSubscription
+    value: 'SERVICE-CONNECTION-AZURE'  # ← Le nom exact de ta "Service Connection"
+  - name: staticWebAppLocation
+    value: 'src/frontend'
+  - name: functionAppLocation
+    value: 'src/functions'
+  - name: functionAppName
+    value: 'projet-azure-backend'      # ← Le nom exact de ta Azure Function App
+  - name: deployment_token
+    value: $(deployment_token)
 
 stages:
-- stage: DeployFullStack
+- stage: BuildAndDeploy
   jobs:
-  - job: DeployApp
+  - job: DeployFullStack
     pool:
-      vmImage: ubuntu-latest
+      vmImage: 'ubuntu-latest'
     steps:
     - checkout: self
 
     - task: AzureStaticWebApp@0
+      displayName: 'Deploy Frontend to Azure Static Web App'
       inputs:
-        app_location: $(app_location)
-        api_location: $(api_location)
-        output_location: $(output_location)
-        azure_static_web_apps_api_token: $(azure_static_web_apps_api_token)
+        app_location: $(staticWebAppLocation)
+        skip_app_build: true
+        azure_static_web_apps_api_token: $(deployment_token)
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive Azure Function App'
+      inputs:
+        rootFolderOrFile: $(functionAppLocation)
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: '$(Build.ArtifactStagingDirectory)/functionapp.zip'
+        replaceExistingArchive: true
+
+    - task: AzureFunctionApp@1
+      displayName: 'Deploy Function App (Backend)'
+      inputs:
+        azureSubscription: $(azureSubscription)
+        appType: functionAppLinux
+        appName: $(functionAppName)
+        package: '$(Build.ArtifactStagingDirectory)/functionapp.zip'
