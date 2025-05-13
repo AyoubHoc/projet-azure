@@ -1,0 +1,29 @@
+variables:
+- group: SWA
+
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  azure_static_web_apps_api_token: $(deployment_token)  # à créer dans DevOps
+  app_location: '/' # racine du projet front
+  api_location: '../projet-azure-backend/functions/helloApi'
+  output_location: ''  # si tu as un build front, sinon vide
+
+stages:
+- stage: DeployFullStack
+  jobs:
+  - job: DeployApp
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
+
+    - task: AzureStaticWebApp@0
+      inputs:
+        app_location: $(app_location)
+        api_location: $(api_location)
+        output_location: $(output_location)
+        azure_static_web_apps_api_token: $(azure_static_web_apps_api_token)
