@@ -9,17 +9,33 @@ variables:
 pool:
   vmImage: ubuntu-latest
 
-stages:
-- stage: DeployFrontend
-  jobs:
-    - job: Deploy
-      steps:
-        - checkout: self
+jobs:
+- job: DeployFullStack
+  displayName: 'Deploy Frontend and Backend'
+  steps:
+    - checkout: self
 
-        - task: AzureStaticWebApp@0
-          displayName: 'Deploy Frontend to Azure Static Web App'
-          inputs:
-            app_location: 'frontend'
-            output_location: ''
-            skip_app_build: true
-            deployment_token: $(swa_deployment_token)
+    - task: AzureStaticWebApp@0
+      displayName: 'Deploy Frontend to Azure Static Web App'
+      inputs:
+        app_location: 'frontend'               # chemin vers ton code front
+        output_location: ''                    # build par défaut
+        skip_app_build: true
+        deployment_token: $(swa_deployment_token)
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive Azure Function App'
+      inputs:
+        rootFolderOrFile: 'api'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/api.zip'
+        replaceExistingArchive: true
+
+    - task: AzureFunctionApp@1
+      displayName: 'Deploy Function App (Backend)'
+      inputs:
+        azureSubscription: 'AzureSPN'
+        appType: functionAppLinux
+        appName: 'projet-azure-backend'
+        package: '$(Build.ArtifactStagingDirectory)/api.zip'
