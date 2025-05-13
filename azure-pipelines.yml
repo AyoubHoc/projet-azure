@@ -6,13 +6,13 @@ trigger:
 variables:
   - group: SWA
   - name: azureSubscription
-    value: 'SERVICE-CONNECTION-AZURE'  # ← Le nom exact de ta "Service Connection"
+    value: 'AzureSPN'  
   - name: staticWebAppLocation
     value: 'src/frontend'
   - name: functionAppLocation
     value: 'src/functions'
   - name: functionAppName
-    value: 'projet-azure-backend'      # ← Le nom exact de ta Azure Function App
+    value: 'projet-azure-backend'
   - name: deployment_token
     value: $(deployment_token)
 
