@@ -4,47 +4,45 @@ trigger:
       - main
 
 variables:
-  - group: SWA
-  - name: azureSubscription
-    value: 'AzureSPN'  
-  - name: staticWebAppLocation
-    value: 'src/frontend'
-  - name: functionAppLocation
-    value: 'src/functions'
-  - name: functionAppName
-    value: 'projet-azure-backend'
-  - name: deployment_token
-    value: $(deployment_token)
+- group: swa-secrets
 
-stages:
-- stage: BuildAndDeploy
-  jobs:
-  - job: DeployFullStack
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
+jobs:
+- job: DeployFrontend
+  displayName: Deploy Frontend to Azure Static Web App
+  pool:
+    vmImage: ubuntu-latest
+  steps:
     - checkout: self
 
     - task: AzureStaticWebApp@0
-      displayName: 'Deploy Frontend to Azure Static Web App'
+      displayName: Deploy to SWA
       inputs:
-        app_location: $(staticWebAppLocation)
+        app_location: 'frontend'
+        output_location: ''
+        api_location: ''
         skip_app_build: true
-        azure_static_web_apps_api_token: $(deployment_token)
+        deployment_token: $(swa_deployment_token)
+
+- job: DeployFunction
+  displayName: Deploy Azure Function API
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+    - checkout: self
 
     - task: ArchiveFiles@2
-      displayName: 'Archive Azure Function App'
+      displayName: Archive function app for deployment
       inputs:
-        rootFolderOrFile: $(functionAppLocation)
+        rootFolderOrFile: 'api'
         includeRootFolder: false
-        archiveType: zip
+        archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/functionapp.zip'
         replaceExistingArchive: true
 
     - task: AzureFunctionApp@1
-      displayName: 'Deploy Function App (Backend)'
+      displayName: Deploy Function App
       inputs:
-        azureSubscription: $(azureSubscription)
+        azureSubscription: 'AzureSPN'
         appType: functionAppLinux
-        appName: $(functionAppName)
+        appName: 'projet-azure-api' 
         package: '$(Build.ArtifactStagingDirectory)/functionapp.zip'
