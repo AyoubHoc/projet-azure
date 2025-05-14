@@ -1,41 +1,16 @@
 trigger:
-  branches:
-    include:
-      - main
+  - main
 
 variables:
-- group: swa-secrets
+  azure_static_web_apps_api_token: $(deployment_token)
 
 pool:
   vmImage: ubuntu-latest
 
-jobs:
-- job: DeployFullStack
-  displayName: 'Deploy Frontend and Backend'
-  steps:
-    - checkout: self
-
-    - task: AzureStaticWebApp@0
-      displayName: 'Deploy Frontend to Azure Static Web App'
-      inputs:
-        app_location: 'frontend'               # chemin vers ton code front
-        output_location: ''                    # build par défaut
-        skip_app_build: true
-        deployment_token: $(swa_deployment_token)
-
-    - task: ArchiveFiles@2
-      displayName: 'Archive Azure Function App'
-      inputs:
-        rootFolderOrFile: 'api'
-        includeRootFolder: false
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/api.zip'
-        replaceExistingArchive: true
-
-    - task: AzureFunctionApp@1
-      displayName: 'Deploy Function App (Backend)'
-      inputs:
-        azureSubscription: 'AzureSPN'
-        appType: functionAppLinux
-        appName: 'projet-azure-backend'
-        package: '$(Build.ArtifactStagingDirectory)/api.zip'
+steps:
+  - task: AzureStaticWebApp@0
+    inputs:
+      app_location: "/frontend"
+      api_location: ""  # Vide car backend séparé
+      output_location: ""  # Pas de build
+      azure_static_web_apps_api_token: $(azure_static_web_apps_api_token)
