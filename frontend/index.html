@@ -28,50 +28,64 @@
       margin: 10px; transition: background 0.3s ease;
     }
     button:hover { background-color: #008cb4; }
-    #result { margin-top: 20px; font-weight: bold; color: #f0f0f0; }
+    #result {
+      margin-top: 20px; font-weight: bold; color: #f0f0f0;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Application Full Stack sur Azure</h1>
     <h2>Projet réalisé par Ayoub, Killian et Vincent</h2>
-    <button onclick="callApi()">Appeler l'API hello</button>
-    <button onclick="addCoin()">Ajouter une pièce 🪙</button>
+
+    <button id="btnHello">Appeler l'API hello</button>
+    <button id="btnAddCoin">Ajouter une pièce 🪙</button>
+
     <p id="result"></p>
   </div>
 
   <script>
-    // Si vous gardez la Function hello :
-    function callApi() {
-      fetch("https://projet-azure-api.azurewebsites.net/api/hello")
-        .then(r => r.text())
-        .then(txt => document.getElementById("result").innerText = txt)
-        .catch(err => document.getElementById("result").innerText = "Erreur API : " + err);
-    }
+    const resultEl = document.getElementById('result');
+    const helloBtn = document.getElementById('btnHello');
+    const coinBtn  = document.getElementById('btnAddCoin');
 
-    // Nouvelle fonction : on appelle directement l'API Data REST de Static Web Apps
-    async function addCoin() {
-      const output = document.getElementById("result");
-      output.innerText = "⏳ Ajout en cours…";
+    // 1) Appel de la Function App 'hello'
+    helloBtn.addEventListener('click', async () => {
+      resultEl.innerText = '⏳ Appel de /api/hello…';
+      try {
+        const resp = await fetch('https://projet-azure-api.azurewebsites.net/api/hello');
+        const txt  = await resp.text();
+        resultEl.innerText = `✅ hello → ${resp.status}: ${txt}`;
+      } catch (e) {
+        resultEl.innerText = `❌ Erreur hello: ${e.message}`;
+      }
+    });
+
+    // 2) Insertion d'une pièce via Data API Builder
+    coinBtn.addEventListener('click', async () => {
+      resultEl.innerText = '⏳ Ajout d\'une pièce en cours…';
+
+      // Data API Builder attend un tableau "records"
+      const payload = { records: [ { montant: 1 } ] };
 
       try {
-        const resp = await fetch("/data-api/rest/Tirelire", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          // ici on ajoute toujours 1 unité, mais vous pouvez demander un prompt
-          body: JSON.stringify({ montant: 1 })
+        const resp = await fetch('/data-api/rest/Tirelire', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
 
         if (resp.ok) {
-          output.innerText = "✅ Pièce ajoutée (status " + resp.status + ")";
+          resultEl.innerText = `✅ Pièce ajoutée (status ${resp.status})`;
         } else {
-          const err = await resp.text();
-          output.innerText = `❌ Erreur ${resp.status} : ${err}`;
+          const errText = await resp.text();
+          resultEl.innerText = `❌ Erreur ${resp.status}: ${errText}`;
         }
       } catch (e) {
-        output.innerText = "❌ Erreur réseau : " + e.message;
+        resultEl.innerText = `❌ Erreur réseau: ${e.message}`;
       }
-    }
+    });
   </script>
 </body>
 </html>
