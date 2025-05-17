@@ -9,8 +9,7 @@
       font-family: 'Inter', sans-serif;
       margin: 0; padding: 0;
       background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: white;
-      display: flex; justify-content: center; align-items: center;
+      color: white; display: flex; justify-content: center; align-items: center;
       min-height: 100vh;
     }
     .container {
@@ -28,10 +27,7 @@
       margin: 10px; transition: background 0.3s ease;
     }
     button:hover { background-color: #008cb4; }
-    #result {
-      margin-top: 20px; font-weight: bold; color: #f0f0f0;
-      white-space: pre-wrap;
-    }
+    #result { margin-top: 20px; font-weight: bold; color: #f0f0f0; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -41,51 +37,42 @@
 
     <button id="btnHello">Appeler l'API hello</button>
     <button id="btnAddCoin">Ajouter une pièce 🪙</button>
-
     <p id="result"></p>
   </div>
 
   <script>
     const resultEl = document.getElementById('result');
-    const helloBtn = document.getElementById('btnHello');
-    const coinBtn  = document.getElementById('btnAddCoin');
-
-    // 1) Appel de la Function App 'hello'
-    helloBtn.addEventListener('click', async () => {
-      resultEl.innerText = '⏳ Appel de /api/hello…';
+    document.getElementById('btnHello').onclick = async () => {
+      resultEl.textContent = '⏳ Appel de /api/hello…';
       try {
-        const resp = await fetch('https://projet-azure-api.azurewebsites.net/api/hello');
-        const txt  = await resp.text();
-        resultEl.innerText = `✅ hello → ${resp.status}: ${txt}`;
+        const r = await fetch('https://projet-azure-api.azurewebsites.net/api/hello');
+        const t = await r.text();
+        resultEl.textContent = `✅ hello → ${r.status}: ${t}`;
       } catch (e) {
-        resultEl.innerText = `❌ Erreur hello: ${e.message}`;
+        resultEl.textContent = `❌ Erreur hello: ${e.message}`;
       }
-    });
+    };
 
-    // 2) Insertion d'une pièce via Data API Builder
-    coinBtn.addEventListener('click', async () => {
-      resultEl.innerText = '⏳ Ajout d\'une pièce en cours…';
-
-      // Data API Builder attend un tableau "records"
-      const payload = { records: [ { montant: 1 } ] };
+    document.getElementById('btnAddCoin').onclick = async () => {
+      resultEl.textContent = '⏳ Ajout d\'une pièce en cours…';
 
       try {
-        const resp = await fetch('/data-api/rest/Tirelire', {
+        const r = await fetch('/data-api/rest/Tirelire', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ montant: 1 })
         });
 
-        if (resp.ok) {
-          resultEl.innerText = `✅ Pièce ajoutée (status ${resp.status})`;
+        if (r.ok) {
+          resultEl.textContent = `✅ Pièce ajoutée (status ${r.status})`;
         } else {
-          const errText = await resp.text();
-          resultEl.innerText = `❌ Erreur ${resp.status}: ${errText}`;
+          const err = await r.text();
+          resultEl.textContent = `❌ Erreur ${r.status}: ${err}`;
         }
       } catch (e) {
-        resultEl.innerText = `❌ Erreur réseau: ${e.message}`;
+        resultEl.textContent = `❌ Erreur réseau: ${e.message}`;
       }
-    });
+    };
   </script>
 </body>
 </html>
