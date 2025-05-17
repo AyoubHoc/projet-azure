@@ -64,7 +64,7 @@
         });
 
         if (r.ok) {
-          resultEl.textContent = `✅ Pièce ajoutée (status ${r.status})`;
+          resultEl.textContent = `✅ Pièce ajoutée dans la tirelire (status ${r.status})`;
         } else {
           const err = await r.text();
           resultEl.textContent = `❌ Erreur ${r.status}: ${err}`;
