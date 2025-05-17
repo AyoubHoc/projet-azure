@@ -10,7 +10,8 @@ pool:
 steps:
   - task: AzureStaticWebApp@0
     inputs:
-      app_location: "/frontend"
-      api_location: ""  # Vide car backend séparé
-      output_location: ""  # Pas de build
+      app_location:       "/frontend"                   # là où se trouve votre index.html
+      api_location:       ""                            # pas de Function App ici
+      output_location:    ""                            # pas de build step
+      data_api_location:  "/frontend/swa-db-connections"# <-- dossier de votre config DAB
       azure_static_web_apps_api_token: $(azure_static_web_apps_api_token)
