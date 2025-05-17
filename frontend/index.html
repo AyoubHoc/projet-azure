@@ -7,93 +7,70 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: flex; justify-content: center; align-items: center;
       min-height: 100vh;
     }
-
     .container {
-      background-color: #ffffff0f;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-      text-align: center;
-      max-width: 600px;
-      width: 90%;
+      background-color: rgba(255,255,255,0.07);
+      padding: 40px; border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      text-align: center; max-width: 600px; width: 90%;
     }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    h2 {
-      font-weight: 400;
-      font-size: 1.1rem;
-      margin-bottom: 30px;
-      color: #ccc;
-    }
-
+    h1 { font-size: 2rem; margin-bottom: 10px; }
+    h2 { font-weight: 400; font-size: 1.1rem; margin-bottom: 30px; color: #ccc; }
     button {
-      background-color: #00c9ff;
-      border: none;
-      padding: 12px 24px;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
-      margin: 10px;
-      transition: background 0.3s ease;
+      background-color: #00c9ff; border: none;
+      padding: 12px 24px; font-size: 1rem;
+      border-radius: 8px; cursor: pointer; color: white;
+      margin: 10px; transition: background 0.3s ease;
     }
-
-    button:hover {
-      background-color: #008cb4;
-    }
-
-    #result {
-      margin-top: 20px;
-      font-weight: bold;
-      color: #f0f0f0;
-    }
+    button:hover { background-color: #008cb4; }
+    #result { margin-top: 20px; font-weight: bold; color: #f0f0f0; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Application Full Stack sur Azure</h1>
     <h2>Projet réalisé par Ayoub, Killian et Vincent</h2>
-    <button onclick="callApi()">Appeler l'API</button>
+    <button onclick="callApi()">Appeler l'API hello</button>
     <button onclick="addCoin()">Ajouter une pièce 🪙</button>
     <p id="result"></p>
   </div>
 
   <script>
+    // Si vous gardez la Function hello :
     function callApi() {
       fetch("https://projet-azure-api.azurewebsites.net/api/hello")
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById("result").innerText = data;
-        })
-        .catch(error => {
-          document.getElementById("result").innerText = "Erreur API : " + error;
-        });
+        .then(r => r.text())
+        .then(txt => document.getElementById("result").innerText = txt)
+        .catch(err => document.getElementById("result").innerText = "Erreur API : " + err);
     }
 
-    function addCoin() {
-      fetch("https://projet-azure-api.azurewebsites.net/api/addCoin", {
-        method: "POST"
-      })
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById("result").innerText = data;
-        })
-        .catch(error => {
-          document.getElementById("result").innerText = "Erreur lors de l'ajout : " + error;
+    // Nouvelle fonction : on appelle directement l'API Data REST de Static Web Apps
+    async function addCoin() {
+      const output = document.getElementById("result");
+      output.innerText = "⏳ Ajout en cours…";
+
+      try {
+        const resp = await fetch("/data-api/rest/Tirelire", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // ici on ajoute toujours 1 unité, mais vous pouvez demander un prompt
+          body: JSON.stringify({ montant: 1 })
         });
+
+        if (resp.ok) {
+          output.innerText = "✅ Pièce ajoutée (status " + resp.status + ")";
+        } else {
+          const err = await resp.text();
+          output.innerText = `❌ Erreur ${resp.status} : ${err}`;
+        }
+      } catch (e) {
+        output.innerText = "❌ Erreur réseau : " + e.message;
+      }
     }
   </script>
 </body>
