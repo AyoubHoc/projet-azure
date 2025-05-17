@@ -13,7 +13,6 @@
       min-height: 100vh;
     }
     .container {
-      position: relative;
       background-color: rgba(255,255,255,0.07);
       padding: 40px; border-radius: 16px;
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
@@ -21,40 +20,14 @@
     }
     h1 { font-size: 2rem; margin-bottom: 10px; }
     h2 { font-weight: 400; font-size: 1.1rem; margin-bottom: 30px; color: #ccc; }
-    input[type="number"] {
-      width: 60px; padding: 6px; margin-right: 10px; border-radius: 4px;
-      border: none; text-align: center; font-size: 1rem;
-    }
     button {
       background-color: #00c9ff; border: none;
       padding: 12px 24px; font-size: 1rem;
       border-radius: 8px; cursor: pointer; color: white;
       margin: 10px; transition: background 0.3s ease;
     }
-    button:disabled {
-      opacity: 0.5; cursor: not-allowed;
-    }
-    button:hover:not(:disabled) { background-color: #008cb4; }
-    #result { margin-top: 20px; font-weight: bold; color: #f0f0f0; }
-    #coinList { text-align: left; margin-top: 20px; padding: 0; list-style: none; max-height: 200px; overflow-y: auto; }
-    #coinList li { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    #total { margin-top: 10px; font-size: 1.2rem; }
-
-    /* Toast */
-    #toast {
-      visibility: hidden;
-      min-width: 200px;
-      background-color: #333; color: #fff;
-      text-align: center; border-radius: 4px;
-      padding: 10px; position: absolute;
-      bottom: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 1;
-      /* animation */
-      opacity: 0; transition: opacity 0.5s ease-in-out;
-    }
-    #toast.show {
-      visibility: visible; opacity: 1;
-    }
+    button:hover { background-color: #008cb4; }
+    #result { margin-top: 20px; font-weight: bold; color: #f0f0f0; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -62,93 +35,44 @@
     <h1>Application Full Stack sur Azure</h1>
     <h2>Projet réalisé par Ayoub, Killian et Vincent</h2>
 
-    <!-- Saisie du montant + bouton -->
-    <input type="number" id="coinValue" min="1" value="1" />
+    <button id="btnHello">Appeler l'API hello</button>
     <button id="btnAddCoin">Ajouter une pièce 🪙</button>
-
-    <!-- Résultat rapide -->
-    <div id="result"></div>
-
-    <!-- Liste des pièces et total -->
-    <h3>Historique des pièces</h3>
-    <ul id="coinList"></ul>
-    <div id="total"></div>
-
-    <!-- Toast -->
-    <div id="toast">Pièce ajoutée ✔️</div>
+    <p id="result"></p>
   </div>
 
   <script>
-    const resultEl   = document.getElementById('result');
-    const listEl     = document.getElementById('coinList');
-    const totalEl    = document.getElementById('total');
-    const btnAdd     = document.getElementById('btnAddCoin');
-    const inputValue = document.getElementById('coinValue');
-    const toastEl    = document.getElementById('toast');
-
-    // Charge la liste et calcule le total
-    async function loadCoins() {
+    const resultEl = document.getElementById('result');
+    document.getElementById('btnHello').onclick = async () => {
+      resultEl.textContent = '⏳ Appel de /api/hello…';
       try {
-        const resp = await fetch('/data-api/rest/Tirelire');
-        const data = await resp.json();
-        // afficher la liste
-        listEl.innerHTML = '';
-        data.forEach(row => {
-          const li = document.createElement('li');
-          li.textContent = `#${row.id} • ${row.montant} € le ${new Date(row.date_ajout).toLocaleString()}`;
-          listEl.appendChild(li);
-        });
-        // calcul du solde
-        const sum = data.reduce((acc, r) => acc + (r.montant||0), 0);
-        totalEl.textContent = `Solde total : ${sum} €`;
+        const r = await fetch('https://projet-azure-api.azurewebsites.net/api/hello');
+        const t = await r.text();
+        resultEl.textContent = `✅ hello → ${r.status}: ${t}`;
       } catch (e) {
-        resultEl.textContent = '❌ Erreur chargement : ' + e.message;
+        resultEl.textContent = `❌ Erreur hello: ${e.message}`;
       }
-    }
+    };
 
-    // Affiche un toast puis le masque après 2s
-    function showToast(msg) {
-      toastEl.textContent = msg;
-      toastEl.classList.add('show');
-      setTimeout(() => toastEl.classList.remove('show'), 2000);
-    }
-
-    // Insertion d'une nouvelle pièce
-    btnAdd.addEventListener('click', async () => {
-      const montant = parseInt(inputValue.value, 10);
-      if (isNaN(montant) || montant < 1) {
-        resultEl.textContent = '❌ Montant invalide !';
-        return;
-      }
-
-      // UI feedback
-      btnAdd.disabled = true;
-      resultEl.textContent = '⏳ Ajout en cours…';
+    document.getElementById('btnAddCoin').onclick = async () => {
+      resultEl.textContent = '⏳ Ajout d\'une pièce en cours…';
 
       try {
-        const resp = await fetch('/data-api/rest/Tirelire', {
+        const r = await fetch('/data-api/rest/Tirelire', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ montant })
+          body: JSON.stringify({ montant: 1 })
         });
 
-        if (resp.ok) {
-          resultEl.textContent = '';
-          showToast('Pièce ajoutée ✔️');
-          await loadCoins();        // rafraîchir liste+solde
+        if (r.ok) {
+          resultEl.textContent = `✅ Pièce ajoutée dans la tirelire (status ${r.status})`;
         } else {
-          const err = await resp.text();
-          resultEl.textContent = `❌ Erreur ${resp.status}: ${err}`;
+          const err = await r.text();
+          resultEl.textContent = `❌ Erreur ${r.status}: ${err}`;
         }
       } catch (e) {
-        resultEl.textContent = '❌ Erreur réseau : ' + e.message;
-      } finally {
-        btnAdd.disabled = false;
+        resultEl.textContent = `❌ Erreur réseau: ${e.message}`;
       }
-    });
-
-    // Chargement initial
-    window.addEventListener('DOMContentLoaded', loadCoins);
+    };
   </script>
 </body>
 </html>
