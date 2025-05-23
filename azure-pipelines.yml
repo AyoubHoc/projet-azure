@@ -12,6 +12,6 @@ steps:
     inputs:
       app_location:       "/frontend"                   # là où se trouve votre index.html
       api_location:       ""                            # pas de Function App ici
-      output_location:    ""                            # pas de build step
+      output_location:    ""                            
       data_api_location:  "/frontend/swa-db-connections"# <-- dossier de votre config DAB
       azure_static_web_apps_api_token: $(azure_static_web_apps_api_token)
